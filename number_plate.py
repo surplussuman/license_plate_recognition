@@ -3,7 +3,7 @@ import easyocr
 import pandas as pd
 harcascade = "model/haarcascade_russian_plate_number.xml"
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 cap.set(3, 640) # width
 cap.set(4, 480) #height
@@ -52,5 +52,7 @@ while True:
             print("Plate Number:", plate_number)
                 
         count += 1
-        
+
+    if cv2.waitKey(10) & 0xFF == ord('q'):
+            break   
 
