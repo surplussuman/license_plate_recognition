@@ -32,12 +32,19 @@ while True:
 
             img_roi = img[y: y+h, x:x+w]
 
-            # Preprocess the image before OCR
-            gray_img = cv2.cvtColor(img_roi, cv2.COLOR_BGR2GRAY)
-            # Apply Gaussian blur to remove noise
-            blurred_img = cv2.GaussianBlur(gray_img, (5, 5), 0)
-            # Apply adaptive thresholding to binarize the image
-            thresh_img = cv2.adaptiveThreshold(blurred_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+            gray_roi = cv2.cvtColor(img_roi, cv2.COLOR_BGR2GRAY)
+            blur_roi = cv2.GaussianBlur(gray_roi, (5, 5), 0)
+            _, thresh_roi = cv2.threshold(blur_roi, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+            # Find contours and get the largest one
+            contours, _ = cv2.findContours(thresh_roi.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            largest_contour = max(contours, key=cv2.contourArea)
+
+            # Get bounding box coordinates of the contour
+            x_contour, y_contour, w_contour, h_contour = cv2.boundingRect(largest_contour)
+
+            # Crop the contour region
+            plate_crop = thresh_roi[y_contour:y_contour + h_contour, x_contour:x_contour + w_contour]
 
             '''output = reader.readtext(thresh_img)
             
@@ -48,14 +55,14 @@ while True:
                 df.to_excel("plate_numbers.xlsx", index=False)
                 print("Plate Number:", plate_number)'''
 
-            cv2.imshow("ROI", thresh_img)
+            cv2.imshow("ROI", plate_crop)
 
 
     
     cv2.imshow("Result", img)
 
     if cv2.waitKey(1) & 0xFF == ord('s'):
-        cv2.imwrite("plates/scaned_img_" + str(count) + ".jpg", thresh_img)
+        cv2.imwrite("plates/scaned_img_" + str(count) + ".jpg", plate_crop)
         cv2.rectangle(img, (0,200), (640,300), (0,255,0), cv2.FILLED)
         cv2.putText(img, "Plate Saved", (150, 265), cv2.FONT_HERSHEY_COMPLEX_SMALL, 2, (0, 0, 255), 2)
         cv2.imshow("Results",img)
