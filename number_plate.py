@@ -31,7 +31,7 @@ while True:
             cv2.putText(img, "Number Plate", (x,y-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 0, 255), 2)
 
             img_roi = img[y: y+h, x:x+w]
-            
+
 
             gray_roi = cv2.cvtColor(img_roi, cv2.COLOR_BGR2GRAY)
             blur_roi = cv2.GaussianBlur(gray_roi, (5, 5), 0)
@@ -70,6 +70,7 @@ while True:
         cv2.waitKey(500)
  # OCR
         output = reader.readtext("plates/scaned_img_" + str(count) + ".jpg", allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+        
         if output:
             plate_number = output[0][-2]
             data.append({"Plate Number": plate_number})
